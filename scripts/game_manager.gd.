@@ -1,0 +1,191 @@
+
+extends Control
+
+const GOLD = Color("#e5bd61")
+const RED = Color("#941f32")
+const DARK = Color("#09090d")
+const PANEL = Color("#17171d")
+
+var coins: int = 500
+var owned: Dictionary = {}
+var cards: Array[Dictionary] = [
+    {"id":"naruto","name":"Naruto Uzumaki","rarity":"Lendária","power":95},
+    {"id":"sasuke","name":"Sasuke Uchiha","rarity":"Épica","power":88},
+    {"id":"sakura","name":"Sakura Haruno","rarity":"Rara","power":70},
+    {"id":"kakashi","name":"Kakashi Hatake","rarity":"Épica","power":90},
+    {"id":"shikamaru","name":"Shikamaru Nara","rarity":"Comum","power":55},
+    {"id":"hinata","name":"Hinata Hyuga","rarity":"Rara","power":72},
+    {"id":"gaara","name":"Gaara","rarity":"Épica","power":86},
+    {"id":"itachi","name":"Itachi Uchiha","rarity":"Lendária","power":98}
+]
+
+var content: VBoxContainer
+var coin_label: Label
+
+func _ready() -> void:
+    randomize()
+    var bg = ColorRect.new()
+    bg.color = DARK
+    bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    add_child(bg)
+
+    var root = VBoxContainer.new()
+    root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    root.add_theme_constant_override("separation", 12)
+    root.offset_left = 18
+    root.offset_right = -18
+    root.offset_top = 20
+    root.offset_bottom = -18
+    add_child(root)
+
+    var header = HBoxContainer.new()
+    root.add_child(header)
+
+    var title = Label.new()
+    title.text = "NINJA CARD COLLECTION"
+    title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    title.add_theme_color_override("font_color", GOLD)
+    header.add_child(title)
+
+    coin_label = Label.new()
+    coin_label.add_theme_color_override("font_color", GOLD)
+    header.add_child(coin_label)
+
+    var line = ColorRect.new()
+    line.color = RED
+    line.custom_minimum_size.y = 3
+    root.add_child(line)
+
+    var scroll = ScrollContainer.new()
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    root.add_child(scroll)
+
+    content = VBoxContainer.new()
+    content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    content.add_theme_constant_override("separation", 12)
+    scroll.add_child(content)
+
+    var nav = HBoxContainer.new()
+    root.add_child(nav)
+    add_button(nav, "INÍCIO", show_home)
+    add_button(nav, "BOOSTER", show_boosters)
+    add_button(nav, "COLEÇÃO", show_collection)
+    add_button(nav, "BATALHA", show_battle)
+    show_home()
+
+func clear_page() -> void:
+    for child in content.get_children():
+        content.remove_child(child)
+        child.queue_free()
+
+func add_label(text_value: String, size: int = 18) -> void:
+    var label = Label.new()
+    label.text = text_value
+    label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    label.add_theme_font_size_override("font_size", size)
+    label.add_theme_color_override("font_color", GOLD)
+    content.add_child(label)
+
+func add_button(parent: Node, text_value: String, action: Callable) -> void:
+    var button = Button.new()
+    button.text = text_value
+    button.custom_minimum_size.y = 48
+    button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    button.add_theme_color_override("font_color", GOLD)
+    button.pressed.connect(action)
+    parent.add_child(button)
+
+func refresh_coins() -> void:
+    coin_label.text = "◈ " + str(coins)
+
+func show_home() -> void:
+    clear_page()
+    add_label("SHINOBI ARCHIVE", 28)
+    add_label("Colecione ninjas. Abra boosters. Domine a batalha.")
+    add_label("Cartas diferentes: " + str(owned.size()))
+    add_button(content, "ABRIR BOOSTER — 100 MOEDAS", show_boosters)
+    add_button(content, "MINHA COLEÇÃO", show_collection)
+    add_button(content, "IR PARA BATALHA", show_battle)
+    refresh_coins()
+
+func show_boosters() -> void:
+    clear_page()
+    add_label("PORTAL DE BOOSTERS", 26)
+    add_label("Cada pacote custa 100 moedas e contém 3 cartas.")
+    add_label("Comum • Rara • Épica • Lendária")
+    add_button(content, "ABRIR PACOTE", open_booster)
+    add_button(content, "VOLTAR", show_home)
+    refresh_coins()
+
+func open_booster() -> void:
+    if coins < 100:
+        clear_page()
+        add_label("Moedas insuficientes!", 24)
+        add_button(content, "VOLTAR", show_boosters)
+        return
+
+    coins -= 100
+    clear_page()
+    add_label("REVELAÇÃO DE CARTAS!", 25)
+
+    for i in range(3):
+        var card: Dictionary = cards[randi_range(0, cards.size() - 1)]
+        var id: String = card["id"]
+        owned[id] = int(owned.get(id, 0)) + 1
+        add_label(card["name"] + " — " + card["rarity"] + " — Poder " + str(card["power"]))
+
+    add_button(content, "ABRIR OUTRO BOOSTER", show_boosters)
+    add_button(content, "VER COLEÇÃO", show_collection)
+    refresh_coins()
+
+func show_collection() -> void:
+    clear_page()
+    add_label("MINHA COLEÇÃO", 26)
+
+    if owned.is_empty():
+        add_label("Sua coleção está vazia. Abra um booster!")
+    else:
+        for card in cards:
+            var count: int = int(owned.get(card["id"], 0))
+            if count > 0:
+                add_label(card["name"] + " x" + str(count) + " | " + card["rarity"] + " | Poder " + str(card["power"]))
+
+    add_button(content, "VOLTAR AO INÍCIO", show_home)
+    refresh_coins()
+
+func show_battle() -> void:
+    clear_page()
+    var power: int = 0
+    for card in cards:
+        if int(owned.get(card["id"], 0)) > 0:
+            power += int(card["power"])
+
+    add_label("CAMPO DE BATALHA", 26)
+    add_label("Poder da sua equipe: " + str(power))
+    add_label("Vença para ganhar 75 moedas; perca e receba 20.")
+    add_button(content, "DESAFIAR ADVERSÁRIO", fight)
+    add_button(content, "CONSEGUIR CARTAS", show_boosters)
+    refresh_coins()
+
+func fight() -> void:
+    var player_power: int = 0
+    for card in cards:
+        if int(owned.get(card["id"], 0)) > 0:
+            player_power += int(card["power"])
+
+    var enemy_power: int = randi_range(100, 400)
+    clear_page()
+    add_label("RESULTADO DA BATALHA", 26)
+    add_label("Seu poder: " + str(player_power))
+    add_label("Poder inimigo: " + str(enemy_power))
+
+    if player_power >= enemy_power:
+        coins += 75
+        add_label("VITÓRIA! +75 moedas", 24)
+    else:
+        coins += 20
+        add_label("DERROTA HONROSA! +20 moedas", 22)
+
+    add_button(content, "BATALHAR NOVAMENTE", show_battle)
+    add_button(content, "VOLTAR AO INÍCIO", show_home)
+    refresh_coins()
