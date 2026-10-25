@@ -1,0 +1,38 @@
+
+[
+  {
+    "id": "naruto",
+    "name": "Naruto Uzumaki",
+    "rarity": "Lendária",
+    "power": 95,
+    "chakra": 90
+  },
+  {
+    "id": "sasuke",
+    "name": "Sasuke Uchiha",
+    "rarity": "Épica",
+    "power": 88,
+    "chakra": 85
+  },
+  {
+    "id": "sakura",
+    "name": "Sakura Haruno",
+    "rarity": "Rara",
+    "power": 70,
+    "chakra": 65
+  },
+  {
+    "id": "kakashi",
+    "name": "Kakashi Hatake",
+    "rarity": "Épica",
+    "power": 90,
+    "chakra": 88
+  },
+  {
+    "id": "itachi",
+    "name": "Itachi Uchiha",
+    "rarity": "Lendária",
+    "power": 98,
+    "chakra": 95
+  }
+]
