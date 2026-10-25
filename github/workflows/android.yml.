@@ -1,0 +1,40 @@
+
+name: Gerar APK Android
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar jogo Android
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+
+    steps:
+      - name: Baixar arquivos do projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar Godot
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/
+          mkdir -p ~/.config/
+          mv /root/.config/godot ~/.config/godot
+          mv /root/.local/share/godot/export_templates/4.3.stable ~/.local/share/godot/export_templates/4.3.stable
+
+      - name: Verificar projeto
+        run: godot --headless --path . --editor --quit
+
+      - name: Gerar APK
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" build/NarutoCardCollection.apk
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NarutoCardCollection-APK
+          path: build/NarutoCardCollection.apk
